@@ -1,0 +1,16 @@
+#!/bin/bash -e
+cat <<EOF
+This is the sti-scala S2I image:
+To use it, install S2I: https://github.com/openshift/source-to-image
+
+Need to include some env vars to tell the builder what to do:
+SBT_BUILDS="dir1/targets dir2/targets" # So cd to each dir, run sbt with the target/s as an arg.
+DEBUG="something" # Turn on debug for the assemble script so you can see what it is doing.
+
+Sample invocation:
+
+sti build --env SBT_BUILDS="dir1/clean dir2/publishLocal" --env DEBUG=something git://<source code> spicysomtam/s2i-scala-multibuild:java8 <application image>
+
+You can then run the resulting image via:
+docker run <application image>
+EOF
