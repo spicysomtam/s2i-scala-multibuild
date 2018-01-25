@@ -18,9 +18,7 @@ if [ "$1" = "-h" ]; then
 	exec /usr/local/sti/usage
 fi
 
-cd /opt/build
-
-here=${PWD}
+cd $BUILD
 
 for d in .ivy2 .sbt .sbt/boot
 do
@@ -29,7 +27,7 @@ done
 
 for l in .ivy2 .sbt
 do
-  ln -s $here/$l $HOME/$l
+  ln -s $BUILD/$l $HOME/$l
 done
 
 # Restore artifacts from the previous build (if they exist).
@@ -56,14 +54,14 @@ do
   echo "---> Building in dir ${args[0]}"
   final=${args[0]}
   cd ${args[0]} || exit 1
-  sbt -ivy ${here}/.ivy2 -sbt-dir ${here}/.sbt -sbt-boot ${here}/.sbt/boot --error ${args[1]}
+  sbt -ivy ${BUILD}/.ivy2 -sbt-dir ${BUILD}/.sbt -sbt-boot ${BUILD}/.sbt/boot --error ${args[1]}
 
   echo "---> Updating permissions"
   chmod -R g+rw .
 
-  [ -d target/universal/scripts ] && {
-    chgrp -R 0 target/universal/scripts
-    chmod -R g+x target/universal/scripts
+  [ -d target/universal/stage ] && {
+    chgrp -R 0 target/universal/stage
+    chmod -R g+x target/universal/stage
   }
 
   [ -d target/universal ] && {
