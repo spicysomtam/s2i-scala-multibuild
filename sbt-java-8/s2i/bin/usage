@@ -11,6 +11,10 @@ Sample invocation:
 
 sti build --env SBT_BUILDS="dir1/clean dir2/publishLocal" --env DEBUG=something git://<source code> spicysomtam/s2i-scala-multibuild:java8 <application image>
 
+If you wish to map in the underlying docker to say build images using the docker command:
+
+sti build -v /var/run/docker.sock:/var/run/docker.sock --env SBT_BUILDS="dir1/clean dir2/publishLocal" --env DEBUG=something git://<source code> spicysomtam/s2i-scala-multibuild:java8 <application image>
+
 You can then run the resulting image via:
 docker run <application image>
 EOF

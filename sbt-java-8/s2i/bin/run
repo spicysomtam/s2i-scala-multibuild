@@ -1,13 +1,24 @@
 #!/bin/bash -e
 #
-# S2I run script for the 'sti-scala' image.
+# S2I run script for the 's2i-scala-multibuild' image.
 # The run script executes the server that runs your application.
 #
 # For more information see the documentation:
 #	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
 #
+[ -z "$SBT_DIR" ] && {
+  echo "Env var SBT_DIR not defined; cannot determine dir to run from!"
+  exit 1
+}
 
-SCRIPT_COUNT=$(find target/universal/stage/bin -type f -executable | wc -l)
+cd $SBT_DIR || {
+  echo "Cannot change directory to ${SBT_DIR}!"
+  exit 1
+}
+
+execdir=target/universal
+
+SCRIPT_COUNT=$(find $execdir -type f -executable | wc -l)
 
 # Set the environment to production by default.
 if [ -z "$DEV_MODE" ]; then
@@ -15,14 +26,14 @@ if [ -z "$DEV_MODE" ]; then
 fi
 
 if [ "$DEV_MODE" == true ]; then
-  echo "---> Running application in development mode"
+  echo "---> Running application in development mode via sbt run."
   sbt run
 else
   if [ "$SCRIPT_COUNT" -eq "1" ]; then
-    SCRIPT=$(find target/universal/stage/bin -type f -executable)
+    SCRIPT=$(find $execdir -type f -executable)
     exec $SCRIPT -Dpidfile.path=/tmp/app.pid
   else
-    echo "Found $SCRIPT_COUNT scripts instead of one. Exiting."
-    exit 0
+    echo "Found $SCRIPT_COUNT scripts under ${execdir} instead of one. Exiting."
+    exit 1
   fi
 fi

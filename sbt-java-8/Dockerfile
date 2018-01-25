@@ -11,6 +11,7 @@ LABEL io.k8s.description="Build and run Scala applications Java 8" \
       io.openshift.tags="builder,scala,sbt" \
       io.openshift.min-memory="512Mi"
 
+# This is mad, but how it works. /var/run/docker.sock is group owned by docker (gid 999) on debian; within this build group input is gid 999!
 RUN curl -ns https://bintray.com/sbt/rpm/rpm > /etc/yum.repos.d/bintray-sbt-rpm.repo && \
     yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo && \
     yum update -y && \
@@ -20,13 +21,14 @@ RUN curl -ns https://bintray.com/sbt/rpm/rpm > /etc/yum.repos.d/bintray-sbt-rpm.
     tar -zx && \
     mv openshift*/oc /usr/local/bin && \
     rm -rf openshift-origin-client-tools-* && \
+    usermod -a -G input default && \
     yum clean all -y && \
     rm -rf /var/cache/yum
 
 # Copy test app to cache directory
 COPY ./test/test-app /opt/test-app-root
 
-# Cache SBT dependencies and plugins from test app
+# Cache SBT dependencies and plugins from test app; saves downloading every time the builder image is run.
 RUN cd /opt/test-app-root && \
     sbt -ivy /opt/app-root/src/.ivy2 -sbt-dir /opt/app-root/src/.sbt -sbt-boot /opt/app-root/src/.sbt/boot compile && \
     rm -rf /opt/test-app-root && \

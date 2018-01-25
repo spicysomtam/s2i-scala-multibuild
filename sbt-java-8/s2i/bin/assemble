@@ -30,17 +30,33 @@ rm -rf /tmp/src
 echo "---> Building application from source"
 # Space delimited list of dir and build targets: eg "dir1/clean dir2/publishLocal dir3/publishLocal:docker"
 # Passed as env var to s2i build (--help for the args).
+
+for d in /opt/app-root/src/.ivy2 /opt/app-root/src/.sbt /opt/app-root/src/.sbt/boot
+do
+  echo $d
+  ls -la $d
+done
+
 for b in $SBT_BUILDS
 do
   IFS='/' args=($b)
-  echo "Building in dir ${args[0]}..."
+  echo "---> Building in dir ${args[0]}"
   cd ${args[0]} || exit 1
-  sbt --error ${args[1]}
-  chmod -R g+rw .
-  cd -
-done
+  sbt -ivy /opt/app-root/src/.ivy2 -sbt-dir /opt/app-root/src/.sbt -sbt-boot /opt/app-root/src/.sbt/boot --error ${args[1]}
 
-echo "---> Updating script permissions"
-rm target/universal/stage/bin/*.bat
-chgrp 0 target/universal/stage/bin/*
-chmod g+x target/universal/stage/bin/*
+  echo "---> Updating permissions"
+  chmod -R g+rw .
+
+  [ -d target/universal/scripts ] && {
+    chgrp -R 0 target/universal/scripts
+    chmod -R g+x target/universal/scripts
+  }
+
+  [ -d target/universal ] && {
+    echo "---> Removing windows .bat files"
+    find target/universal -type f -name "*.bat" -exec rm -f {} \;
+  }
+
+  cd -
+  echo "---> Completed building in dir ${args[0]}"
+done
