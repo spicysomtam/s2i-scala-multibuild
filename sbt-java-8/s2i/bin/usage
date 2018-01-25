@@ -8,12 +8,12 @@ SBT_BUILDS="dir1/targets dir2/targets" # cd to each dir, run sbt with the target
 DEBUG="something" # Turn on debug for the assemble/build script so you can see what it is doing.
 Include a volume for the builder, and this will be mounted under /opt/build in the build container.
 
-Sample invocation:
+Sample invocation (you can use https://<url> instead of . ):
 
 $ mkdir /var/tmp/s2i
 $ cd <source>
 $ s2i build -v /var/tmp/s2i:/opt/build --env SBT_BUILDS="dir1/clean dir2/publishLocal dir3/stage" \
- --env DEBUG=something git://<source code> spicysomtam/s2i-scala-multibuild:java8 <app-image>
+ --env DEBUG=something . spicysomtam/s2i-scala-multibuild:java8 <app-image>
 
 You can then test run the resulting image via:
 $ docker run -d <app-image>
