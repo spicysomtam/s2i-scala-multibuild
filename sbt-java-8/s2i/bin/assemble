@@ -6,6 +6,9 @@
 # For more information refer to the documentation:
 #	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
 #
+# By default s2i builds in /opt/app-root/src
+# We switch the WORKDIR to /opt/build, and mount a volume there so the build does not end up in final image.
+#
 # Set env var DEBUG to something to switch on debugging...
 [ ! -z "$DEBUG" ] && set -x
 
@@ -14,6 +17,20 @@ if [ "$1" = "-h" ]; then
 	# print the usage.
 	exec /usr/local/sti/usage
 fi
+
+cd /opt/build
+
+here=${PWD}
+
+for d in .ivy2 .sbt .sbt/boot
+do
+  [ ! -d $d ] && mkdir $d
+done
+
+for l in .ivy2 .sbt
+do
+  ln -s $here/$l $HOME/$l
+done
 
 # Restore artifacts from the previous build (if they exist).
 #
@@ -28,21 +45,18 @@ cp -Rn /tmp/src/. ./
 rm -rf /tmp/src
 
 echo "---> Building application from source"
+
 # Space delimited list of dir and build targets: eg "dir1/clean dir2/publishLocal dir3/publishLocal:docker"
 # Passed as env var to s2i build (--help for the args).
-
-for d in /opt/app-root/src/.ivy2 /opt/app-root/src/.sbt /opt/app-root/src/.sbt/boot
-do
-  echo $d
-  ls -la $d
-done
-
+#
 for b in $SBT_BUILDS
 do
   IFS='/' args=($b)
+  unset IFS
   echo "---> Building in dir ${args[0]}"
+  final=${args[0]}
   cd ${args[0]} || exit 1
-  sbt -ivy /opt/app-root/src/.ivy2 -sbt-dir /opt/app-root/src/.sbt -sbt-boot /opt/app-root/src/.sbt/boot --error ${args[1]}
+  sbt -ivy ${here}/.ivy2 -sbt-dir ${here}/.sbt -sbt-boot ${here}/.sbt/boot --error ${args[1]}
 
   echo "---> Updating permissions"
   chmod -R g+rw .
@@ -59,4 +73,12 @@ do
 
   cd -
   echo "---> Completed building in dir ${args[0]}"
+done
+
+# The final target dir is moved to /opt/app-root/src from /opt/build
+cp -rp $final/target /opt/app-root/src/
+
+for l in .ivy2 .sbt
+do
+  rm -f $HOME/$l
 done

@@ -6,34 +6,15 @@
 # For more information see the documentation:
 #	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
 #
-[ -z "$SBT_DIR" ] && {
-  echo "Env var SBT_DIR not defined; cannot determine dir to run from!"
-  exit 1
-}
+# Assumes the last build that generates the runable image uses sbt arg 'stage'.
 
-cd $SBT_DIR || {
-  echo "Cannot change directory to ${SBT_DIR}!"
-  exit 1
-}
+DIR=target/universal/stage/bin
+COUNT=$(find $DIR -type f -executable | wc -l)
 
-execdir=target/universal
-
-SCRIPT_COUNT=$(find $execdir -type f -executable | wc -l)
-
-# Set the environment to production by default.
-if [ -z "$DEV_MODE" ]; then
-  export DEV_MODE=false
-fi
-
-if [ "$DEV_MODE" == true ]; then
-  echo "---> Running application in development mode via sbt run."
-  sbt run
+if [ "$COUNT" -eq "1" ]; then
+  SCRIPT=$(find $DIR -type f -executable)
+  exec $SCRIPT
 else
-  if [ "$SCRIPT_COUNT" -eq "1" ]; then
-    SCRIPT=$(find $execdir -type f -executable)
-    exec $SCRIPT -Dpidfile.path=/tmp/app.pid
-  else
-    echo "Found $SCRIPT_COUNT scripts under ${execdir} instead of one. Exiting."
-    exit 1
-  fi
+  echo "Found $COUNT executable scripts instead of 1 under $SBT_DIR/$DIR. Exiting."
+  exit 1
 fi
