@@ -1,20 +1,20 @@
 #!/bin/bash -e
 cat <<EOF
-This is the sti-scala S2I image:
+This is the s2i-scala-multibuild S2I image:
 To use it, install S2I: https://github.com/openshift/source-to-image
 
 Need to include some env vars to tell the builder what to do:
-SBT_BUILDS="dir1/targets dir2/targets" # So cd to each dir, run sbt with the target/s as an arg.
-DEBUG="something" # Turn on debug for the assemble script so you can see what it is doing.
+SBT_BUILDS="dir1/targets dir2/targets" # cd to each dir, run sbt with the target/s. Last build is the app installed in the output image and its target should be stage.
+DEBUG="something" # Turn on debug for the assemble/build script so you can see what it is doing.
+Include a volume for the builder, and this will be mounted under /opt/build.
 
 Sample invocation:
 
-sti build --env SBT_BUILDS="dir1/clean dir2/publishLocal" --env DEBUG=something git://<source code> spicysomtam/s2i-scala-multibuild:java8 <application image>
+$ mkdir /var/tmp/s2i
+$ cd <source>
+$ s2i build -v /var/tmp/s2i:/opt/build --env SBT_BUILDS="dir1/clean dir2/publishLocal dir3/stage" \
+ --env DEBUG=something git://<source code> spicysomtam/s2i-scala-multibuild:java8 <app-image>
 
-If you wish to map in the underlying docker to say build images using the docker command:
-
-sti build -v /var/run/docker.sock:/var/run/docker.sock --env SBT_BUILDS="dir1/clean dir2/publishLocal" --env DEBUG=something git://<source code> spicysomtam/s2i-scala-multibuild:java8 <application image>
-
-You can then run the resulting image via:
-docker run <application image>
+You can then test run the resulting image via:
+$ docker run -d <app-image>
 EOF
