@@ -7,7 +7,11 @@ use common code from other directories.
 
 An env var is passed to the builder image to specify which subdir builds should be performed, with the target for each subdir. Ideally the last subdir to be built will generate the final app to run, and this should ideally have target `stage` to ensure a java compatible run script/packaging is created:
 
+```
 SBT_BUILDS="dir1/clean dir2/publishLocal dir/stage" 
+```
+
+There is also a DEBUG env var; if this is not an empty string, then a `set -x` is set in the `assemble` script, so you can see what is going on, to debug issues, etc.
 
 [s2i is here.](https://github.com/openshift/source-to-image)
 The resulting image can be run using [Docker](http://docker.io) for testing, but the ultimate aim is to use an openshift build config to build it.
