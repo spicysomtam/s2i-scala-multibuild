@@ -15,6 +15,7 @@ RUN curl -ns https://bintray.com/sbt/rpm/rpm > /etc/yum.repos.d/bintray-sbt-rpm.
     yum update -y && \
     yum install -y java-1.8.0-openjdk-devel sbt && \
     mkdir $BUILD && \
+    chown default $BUILD && \
     yum clean all -y && \
     rm -rf /var/cache/yum
 
