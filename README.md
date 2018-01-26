@@ -21,6 +21,8 @@ s2i takes a build image, injects code into the builder image, and then creates a
 The build process uses a builder volume to do the build, which is `/opt/build` within the container, to ensure all the downloaded sbt components and source code are not included within the final image (and don't create a huge image). When testing on the command line, you can use the `s2i build -v` arg for this; within an openshift build config you can use a volume and have a permanently defined build volume to speed up building (eg all the sbt downloaded components are not re downloaded at each build). The -v arg is similar to
 `docker build -v`.
 
+However, external volumes are not available for openshift build configs. In this case the build will exist in /opt/build. Its a shame volumes are not available, as docker is really slow expanding its internal filesystem; if you use an external volume for /opt/build, the build process is much faster. To split the artifacts out from the build, use an additional build. see [chaining builds](https://docs.openshift.org/latest/dev_guide/builds/advanced_build_operations.html#dev-guide-chaining-builds). Thus the build volume feature is only useful if using s2i locally.
+
 # Versions
 
 Scala versions currently provided are:
