@@ -47,7 +47,7 @@ $ make build
 ```
 $ cd <code-base>
 $ mkdir /var/tmp/s2i
-$ s2i build --loglevel 3 -v /var/tmp/s2i:/opt/build --env SBT_BUILDS="dir1/clean dir2/publishLocal dir3/stage" --env DEBUG=true . spicysomtam/s2i-scala-multibuild:java8 foo 2>&1|tee b
+$ s2i build --loglevel 3 -v /var/tmp/s2i:/opt/build --env SBT_BUILDS="dir1/clean dir2/publishLocal dir3/stage" --env DEBUG=true . spicysomtam/s2i-scala-multibuild:latest foo 2>&1|tee b
 $ docker run -d foo
 ```
 
