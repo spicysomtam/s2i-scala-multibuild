@@ -45,6 +45,7 @@ rm -rf /tmp/src
 echo "---> Building application from source"
 
 # Space delimited list of dir and build targets: eg "dir1/clean dir2/publishLocal dir3/publishLocal:docker"
+# If multiple build targets, delimit these by a hash; eg "dir1/clean dir2/clean#publishLocal#foo dir3/publishLocal"
 # Passed as env var to s2i build (--help for the args).
 #
 for b in $SBT_BUILDS
@@ -54,7 +55,7 @@ do
   echo "---> Building in dir ${args[0]}"
   final=${args[0]}
   cd ${args[0]} || exit 1
-  sbt -ivy ${BUILD}/.ivy2 -sbt-dir ${BUILD}/.sbt -sbt-boot ${BUILD}/.sbt/boot --error ${args[1]}
+  sbt -ivy ${BUILD}/.ivy2 -sbt-dir ${BUILD}/.sbt -sbt-boot ${BUILD}/.sbt/boot --error ${args[1]//\#/ }
 
   echo "---> Updating permissions"
   chmod -R g+rw .
